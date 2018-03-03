@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.EmployeeMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.wms.domain.Employee">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="password" property="password"/>
+        <result column="email" property="email"/>
+        <result column="age" property="age"/>
+        <result column="admin" property="admin"/>
+        <association property="dept" javaType="cn.wolfcode.wms.domain.Department" columnPrefix="dept_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="sn" column="sn"/>
+        </association>
+        <collection property="roles" ofType="Role"
+                    select="cn.wolfcode.wms.mapper.RoleMapper.selectByEmpId" column="id"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM `employee`
+        WHERE id = #{id}
+    </delete>
+    <delete id="batchDelete">
+        DELETE FROM employee WHERE id IN
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteEmployeeRoleRelation">
+        DELETE FROM employee_role
+        WHERE employee_id = #{id}
+    </delete>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO `employee` (name, password, email, age, admin, dept_id)
+        VALUES (#{name}, #{password}, #{email}, #{age}, #{admin}, #{dept.id})
+    </insert>
+    <insert id="saveEmployeeRoleRelation">
+        INSERT INTO employee_role VALUES (#{empId}, #{roleId})
+    </insert>
+    <update id="updateByPrimaryKey">
+        UPDATE `employee`
+        SET name    = #{name},
+            email   = #{email},
+            age     = #{age},
+            admin   = #{admin},
+            dept_id = #{dept.id}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT
+            e.id,
+            e.name,
+            e.password,
+            e.email,
+            e.age,
+            e.admin,
+            d.id   dept_id,
+            d.name dept_name,
+            d.sn   dept_sn
+        FROM `employee` e
+            LEFT JOIN department d ON e.dept_id = d.id
+        WHERE e.id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            e.id,
+            e.name,
+            e.password,
+            e.email,
+            e.age,
+            e.admin,
+            d.id   dept_id,
+            d.name dept_name,
+            d.sn   dept_sn
+        FROM `employee` e
+            LEFT JOIN department d ON e.dept_id = d.id
+    </select>
+    <select id="queryForCount" resultType="java.lang.Integer">
+        SELECT count(e.id)
+        FROM `employee` e
+        LEFT JOIN department d ON e.dept_id = d.id
+        <include refid="base_where"/>
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        SELECT
+        e.id,
+        e.name,
+        e.password,
+        e.email,
+        e.age,
+        e.admin,
+        d.id dept_id,
+        d.name dept_name,
+        d.sn dept_sn
+        FROM `employee` e
+        LEFT JOIN department d ON e.dept_id = d.id
+        <include refid="base_where"/>
+        LIMIT #{start}, #{pageSize}
+    </select>
+    <select id="login" resultMap="BaseResultMap">
+        SELECT
+            e.id,
+            e.name,
+            e.password,
+            e.email,
+            e.age,
+            e.admin,
+            d.id   dept_id,
+            d.name dept_name,
+            d.sn   dept_sn
+        FROM `employee` e
+            LEFT JOIN department d ON e.dept_id = d.id
+        WHERE e.name = #{name} AND e.password = #{password}
+    </select>
+    <select id="selectExpressionsByEmpId" resultType="java.lang.String">
+        SELECT p.expression
+        FROM permission p, role_permission rp, employee_role er
+        WHERE p.id = rp.permission_id AND rp.role_id = er.role_id AND er.employee_id = #{id}
+    </select>
+
+    <sql id="base_where">
+        <where>
+            <if test="keywords != null">
+                and (e.name like concat('%',#{keywords},'%') or e.email like concat('%',#{keywords},'%'))
+            </if>
+            <if test="deptId > 0">
+                and e.dept_id=#{deptId}
+            </if>
+        </where>
+    </sql>
+</mapper>

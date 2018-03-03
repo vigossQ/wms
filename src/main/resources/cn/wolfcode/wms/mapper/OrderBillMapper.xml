@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.OrderBillMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.wms.domain.OrderBill">
+        <id column="id" property="id"/>
+        <result column="sn" property="sn"/>
+        <result column="vdate" property="vdate"/>
+        <result column="status" property="status"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="total_number" property="totalNumber"/>
+        <result column="audit_time" property="auditTime"/>
+        <result column="input_time" property="inputTime"/>
+        <association property="inputUser" javaType="Employee" columnPrefix="inputUser_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="auditor" javaType="Employee" columnPrefix="auditor_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="supplier" javaType="Supplier" columnPrefix="supplier_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <collection property="items" ofType="OrderBillItem"
+                    select="cn.wolfcode.wms.mapper.OrderBillItemMapper.selectByBillId" column="id"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM `orderbill`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO `orderbill` (sn, vdate, status, total_amount, total_number, audit_time,
+                                 input_time, input_user_id, auditor_id, supplier_id)
+        VALUES (#{sn}, #{vdate}, #{status}, #{totalAmount}, #{totalNumber}, #{auditTime},
+                now(), #{inputUser.id}, #{auditor.id}, #{supplier.id})
+    </insert>
+    <update id="updateByPrimaryKey">
+        UPDATE `orderbill`
+        SET sn           = #{sn},
+            vdate        = #{vdate},
+            total_amount = #{totalAmount},
+            total_number = #{totalNumber},
+            supplier_id  = #{supplier.id}
+        WHERE id = #{id}
+    </update>
+    <update id="audit">
+        UPDATE `orderbill`
+        SET status     = #{status},
+            audit_time = now(),
+            auditor_id = #{auditor.id}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT
+            bill.id,
+            bill.sn,
+            bill.vdate,
+            bill.status,
+            bill.total_amount,
+            bill.total_number,
+            bill.audit_time,
+            bill.input_time,
+            bill.input_user_id,
+            bill.auditor_id,
+            bill.supplier_id,
+            inputUser.id   inputUser_id,
+            inputUser.name inputUser_name,
+            auditor.id     auditor_id,
+            auditor.name   auditor_name,
+            s.id           supplier_id,
+            s.name         supplier_name
+        FROM `orderbill` bill
+            JOIN employee inputUser ON inputUser.id = bill.input_user_id
+            LEFT JOIN employee auditor ON auditor.id = bill.auditor_id
+            JOIN supplier s ON s.id = bill.supplier_id
+        WHERE bill.id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            bill.id,
+            bill.sn,
+            bill.vdate,
+            bill.status,
+            bill.total_amount,
+            bill.total_number,
+            bill.audit_time,
+            bill.input_time,
+            bill.input_user_id,
+            bill.auditor_id,
+            bill.supplier_id,
+            inputUser.id   inputUser_id,
+            inputUser.name inputUser_name,
+            auditor.id     auditor_id,
+            auditor.name   auditor_name,
+            s.id           supplier_id,
+            s.name         supplier_name
+        FROM `orderbill` bill
+            JOIN employee inputUser ON inputUser.id = bill.input_user_id
+            LEFT JOIN employee auditor ON auditor.id = bill.auditor_id
+            JOIN supplier s ON s.id = bill.supplier_id
+    </select>
+    <select id="queryForCount" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM `orderbill` bill
+        JOIN employee inputUser ON inputUser.id = bill.input_user_id
+        LEFT JOIN employee auditor ON auditor.id = bill.auditor_id
+        JOIN supplier s ON s.id = bill.supplier_id
+        <include refid="base_where"/>
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        SELECT
+        bill.id,
+        bill.sn,
+        bill.vdate,
+        bill.status,
+        bill.total_amount,
+        bill.total_number,
+        bill.audit_time,
+        bill.input_time,
+        bill.input_user_id,
+        bill.auditor_id,
+        bill.supplier_id,
+        inputUser.id inputUser_id,
+        inputUser.name inputUser_name,
+        auditor.id auditor_id,
+        auditor.name auditor_name,
+        s.id supplier_id,
+        s.name supplier_name
+        FROM `orderbill` bill
+        JOIN employee inputUser ON inputUser.id = bill.input_user_id
+        LEFT JOIN employee auditor ON auditor.id = bill.auditor_id
+        JOIN supplier s ON s.id = bill.supplier_id
+        <include refid="base_where"/>
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <sql id="base_where">
+        <where>
+            <if test="beginDate != null">
+                and bill.vdate &gt;= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and bill.vdate &lt;= #{endDate}
+            </if>
+            <if test="supplierId > 0">
+                and bill.supplier_id=#{supplierId}
+            </if>
+            <if test="status >= 0">
+                and bill.status=#{status}
+            </if>
+        </where>
+    </sql>
+</mapper>

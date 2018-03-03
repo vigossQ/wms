@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.ProductStockMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.wms.domain.ProductStock">
+        <id column="id" property="id"/>
+        <result column="price" property="price"/>
+        <result column="store_number" property="storeNumber"/>
+        <result column="amount" property="amount"/>
+        <association property="product" javaType="Product" columnPrefix="p_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="sn" property="sn"/>
+            <result column="brandId" property="brandId"/>
+            <result column="brandName" property="brandName"/>
+        </association>
+        <association property="depot" javaType="Depot" columnPrefix="depot_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO `productstock` (price, store_number, amount, product_id, depot_id)
+        VALUES (#{price}, #{storeNumber}, #{amount}, #{product.id}, #{depot.id})
+    </insert>
+    <update id="updateByPrimaryKey">
+        UPDATE `productstock`
+        SET price        = #{price},
+            store_number = #{storeNumber},
+            amount       = #{amount}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByProductIdAndDepotId" resultMap="BaseResultMap">
+        SELECT
+            id,
+            price,
+            store_number,
+            amount,
+            product_id,
+            depot_id
+        FROM `productstock`
+        WHERE product_id = #{productId} AND depot_id = #{depotId}
+    </select>
+    <select id="queryForCount" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM productstock ps
+        JOIN product p ON p.id = ps.product_id
+        JOIN depot d ON d.id = ps.depot_id
+        <include refid="base_where"/>
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        SELECT
+        ps.id,
+        ps.price,
+        ps.store_number,
+        ps.amount,
+        ps.product_id,
+        ps.depot_id,
+        p.id p_id,
+        p.name p_name,
+        p.sn p_sn,
+        p.brand_id p_brandId,
+        p.brand_name p_brandName,
+        d.id depot_id,
+        d.name depot_name
+        FROM `productstock` ps
+        JOIN product p ON p.id = ps.product_id
+        JOIN depot d ON d.id = ps.depot_id
+        <include refid="base_where"/>
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <sql id="base_where">
+        <where>
+            <if test="keywords != null">
+                and (p.name like concat("%",#{keywords},"%") or p.sn like concat("%",#{keywords},"%"))
+            </if>
+            <if test="depotId > 0">
+                and d.id = #{depotId}
+            </if>
+            <if test="brandId > 0">
+                and p.brand_id = #{brandId}
+            </if>
+            <if test="limitNumber != null">
+                and ps.store_number &lt;= #{limitNumber}
+            </if>
+        </where>
+    </sql>
+</mapper>

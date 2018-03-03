@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.RoleMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.wms.domain.Role">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sn" property="sn"/>
+        <collection property="permissions" ofType="cn.wolfcode.wms.domain.Permission"
+                    select="cn.wolfcode.wms.mapper.PermissionMapper.selectByRoleId" column="id"/>
+        <collection property="systemMenus" ofType="cn.wolfcode.wms.domain.SystemMenu"
+                    select="cn.wolfcode.wms.mapper.SystemMenuMapper.selectByRoleId" column="id"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM `role`
+        WHERE id = #{id}
+    </delete>
+    <delete id="deleteRolePermissionRelation">
+        DELETE FROM role_permission
+        WHERE role_id = #{roleId}
+    </delete>
+    <delete id="deleteRoleSystemMenuRelation">
+        DELETE FROM role_menu
+        WHERE role_id = #{roleId}
+    </delete>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO `role` (name, sn)
+        VALUES (#{name}, #{sn})
+    </insert>
+    <insert id="saveRolePermissionRelation">
+        INSERT INTO role_permission VALUES (#{roleId}, #{permissionId})
+    </insert>
+    <insert id="saveRoleSystemMenuRelation">
+        INSERT INTO role_menu VALUES (#{roleId}, #{systemMenuId})
+    </insert>
+    <update id="updateByPrimaryKey">
+        UPDATE `role`
+        SET name = #{name},
+            sn   = #{sn}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            sn
+        FROM `role`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            sn
+        FROM `role`
+    </select>
+    <select id="queryForCount" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM role
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            sn
+        FROM `role`
+        LIMIT #{start}, #{pageSize}
+    </select>
+    <select id="selectByEmpId" resultType="Role">
+        SELECT
+            r.id,
+            r.name,
+            r.sn
+        FROM role r
+            JOIN employee_role er ON r.id = er.role_id
+        WHERE er.employee_id = #{empId}
+    </select>
+</mapper>

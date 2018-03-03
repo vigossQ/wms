@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.SupplierMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.wms.domain.Supplier">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="phone" property="phone"/>
+        <result column="address" property="address"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM `supplier`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO `supplier` (name, phone, address)
+        VALUES (#{name}, #{phone}, #{address})
+    </insert>
+    <update id="updateByPrimaryKey">
+        UPDATE `supplier`
+        SET name    = #{name},
+            phone   = #{phone},
+            address = #{address}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            phone,
+            address
+        FROM `supplier`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            phone,
+            address
+        FROM `supplier`
+    </select>
+    <select id="queryForCount" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM supplier
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            phone,
+            address
+        FROM `supplier`
+        LIMIT #{start}, #{pageSize}
+    </select>
+</mapper>

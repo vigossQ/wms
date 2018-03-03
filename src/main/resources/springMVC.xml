@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+		
+    <import resource="classpath:applicationContext.xml"/>
+    
+    <!-- 配置对应扫描器 -->
+    <mvc:annotation-driven/>
+    <context:component-scan base-package="cn.wolfcode.wms.web"/>
+    <!-- 配置静态资源管理器:管理所有静态资源,即除WEB-INF目录下的所有文件 -->
+    <mvc:default-servlet-handler/>
+    
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+    	<property name="prefix" value="/WEB-INF/views/"/>
+    	<property name="suffix" value=".jsp"/>
+    </bean>
+	<!--异常处理-->
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="defaultErrorView" value="commons/error"/>
+		<property name="exceptionAttribute" value="ex"/>
+		<property name="exceptionMappings">
+			<value>
+				cn.wolfcode.wms.utils.NoPermissionException=nopermission
+			</value>
+		</property>
+	</bean>
+    <!-- 拦截器的配置 -->
+	<!--<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+			<mvc:exclude-mapping path="/login.do"/>
+			<bean class="cn.wolfcode.wms.web.interceptor.CheckLoginInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+			<mvc:exclude-mapping path="/login.do"/>
+			<bean class="cn.wolfcode.wms.web.interceptor.SecurityInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>-->
+	<!--配置文件上传解析器-->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="#{1024*1024*3}"/>
+	</bean>
+</beans>

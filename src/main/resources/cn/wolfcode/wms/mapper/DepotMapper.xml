@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.DepotMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.wms.domain.Depot">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="location" property="location"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM `depot`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO `depot` (name, location)
+        VALUES (#{name}, #{location})
+    </insert>
+    <update id="updateByPrimaryKey">
+        UPDATE `depot`
+        SET name     = #{name},
+            location = #{location}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            location
+        FROM `depot`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            location
+        FROM `depot`
+    </select>
+    <select id="queryForCount" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM depot
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            location
+        FROM `depot`
+        LIMIT #{start}, #{pageSize}
+    </select>
+</mapper>
